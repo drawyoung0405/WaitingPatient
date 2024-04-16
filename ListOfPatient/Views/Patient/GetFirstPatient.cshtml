@@ -1,7 +1,7 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+@*  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>  *@
 @{
     <h2>Thông Tin Chi Tiết Bệnh Nhân</h2>
     <div>
@@ -35,11 +35,12 @@
 
         </dl>
         <a asp-action="Edit" asp-route-id="@Model.Id">Sửa</a> |
-        <a asp-action="Index">Quay Lại Danh Sách</a>
-        <a id="nextButton" type="button" class="btn btn-success">Next</a>
+        <a asp-action="GetPatientNotExamined">Quay Lại Danh Sách</a>
+        <a href="@Url.Action("MarkExamined", "Patient", new { id = Model.Id })" class="btn btn-primary">Next</a>
     </div>
 }
-<script>
+@* <script>
+                    // <a id="nextButton" type="button" class="btn btn-success">Next</a>
     $(document).ready(function () {
         $('#nextButton').click(function () {
             // Gửi yêu cầu AJAX để lấy thông tin bệnh nhân tiếp theo
@@ -56,4 +57,4 @@
             });
         });
     });
-</script>
+</script> *@

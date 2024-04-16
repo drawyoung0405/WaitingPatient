@@ -17,13 +17,34 @@ namespace ListingPatient.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> GetPatientNotExamined()
         {
-            var patients = await _context.Patients.OrderBy(p => p.AddedTime).ToListAsync();
+            var patients = await _context.Patients.Where(p=> p.Status == PatientStatus.ChuaKham).OrderBy(p => p.AddedTime).ToListAsync();
+            return View(patients);
+        }
+        public async Task<IActionResult> GetPatientBeExamined()
+        {
+            var patients = await _context.Patients.Where(p => p.Status == PatientStatus.DaKham).OrderBy(p => p.AddedTime).ToListAsync();
             return View(patients);
         }
 
-        // GET: Patients/Details/5
+        // đánh dấu đã khám
+        public async Task<IActionResult> MarkExamined(int id)
+        {
+            var patient = await _context.Patients.FindAsync(id);
+
+            if (patient == null)
+            {
+                return NotFound("Không tìm thấy bệnh nhân");
+            }
+
+            patient.Status = PatientStatus.DaKham; // Chuyển đổi trạng thái sang "đã khám"
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("GetFirstPatient", new { id });
+        }
+        // GET: Patients/Details
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -40,8 +61,9 @@ namespace ListingPatient.Controllers
 
             return View(patient);
         }
-        //Edit
-        public async Task<IActionResult> Edit(int? id)
+        //Edit Get To EDIT
+
+        public async Task<IActionResult> EditView(int? id)
         {
             if (id == null)
             {
@@ -59,8 +81,9 @@ namespace ListingPatient.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,IdentificationNumber,AddedTime")] Patient patient)
-        {
+        public async Task<IActionResult> EditPatient(int id, [Bind("Id, Name, IdentificationNumber, Age, MedicalHistory")] PatientData patient)
+        
+       {
             if (id != patient.Id)
             {
                 return NotFound();
@@ -84,9 +107,9 @@ namespace ListingPatient.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(GetPatientNotExamined));
             }
-            return View(patient);
+            return RedirectToAction("GetPatientNotExamined");
         }
 
         //Delelete: Patients/Delete/id
@@ -99,7 +122,7 @@ namespace ListingPatient.Controllers
             var patient = await _context.Patients.FindAsync(id);
             _context.Patients.Remove(patient);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+                return RedirectToAction("GetPatientNotExamined");
         }
         private bool PatientExists(int id)
         {
@@ -128,24 +151,24 @@ namespace ListingPatient.Controllers
 
         }
 
-        public IActionResult NextPatient()
-        {
-            var nextPatient = _context.Patients.OrderBy(p => p.AddedTime).FirstOrDefault();
-            if (nextPatient != null)
-            {
-                // Loại bỏ bệnh nhân đầu tiên khỏi danh sách chờ
-                _context.Patients.Remove(nextPatient);
-                _context.SaveChanges();
+        //public IActionResult NextPatient()
+        //{
+        //    var nextPatient = _context.Patients.OrderBy(p => p.AddedTime).FirstOrDefault();
+        //    if (nextPatient != null)
+        //    {
+        //        // Loại bỏ bệnh nhân đầu tiên khỏi danh sách chờ
+        //        _context.Patients.Remove(nextPatient);
+        //        _context.SaveChanges();
 
-                return Json(new { id = nextPatient.Id });
-            }
+        //        return Json(new { id = nextPatient.Id });
+        //    }
 
-            return Json(null);
-        }
+        //    return Json(null);
+        //}
 
         public async Task<IActionResult> GetFirstPatient()
         {
-            var firstPatient = await _context.Patients.FirstOrDefaultAsync();
+            var firstPatient = await _context.Patients.Where(p=>p.Status==PatientStatus.ChuaKham).FirstOrDefaultAsync();
 
             if (firstPatient == null)
             {

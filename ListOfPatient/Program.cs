@@ -33,6 +33,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Patient}/{action=Index}/{id?}");
+    pattern: "{controller=Patient}/{action=GetPatientNotExamined}/{id?}");
 
 app.Run();
